@@ -1,0 +1,67 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Dashboard</title>
+    <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+</head>
+<body>
+
+<div class="layout">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+        <div class="logo">RPS</div>
+
+        <nav>
+            <a href="{% url 'dashboard_home' %}">Dashboard</a>
+            <a href="#">Results</a>
+
+            {% if request.user.role == 'admin' %}
+                <div class="nav-section">ADMIN</div>
+                <a href="{% url 'manage_users' %}">Users</a>
+                <a href="{% url 'manage_academics' %}">Classes & Sections</a>
+                <a href="{% url 'manage_subjects' %}">Subjects & Mapping</a>
+                <a href="#">Reports</a>
+
+                <div class="nav-section">ADVANCED</div>
+                <a href="#">Audit Logs</a>
+                <a href="#">Fraud Detection</a>
+                <a href="#">APAAR Validation</a>
+            {% endif %}
+
+            <div class="nav-section">ACCOUNT</div>
+            <form method="POST" action="{% url 'logout' %}" class="logout-form" onsubmit="return confirmLogout()">
+             {% csrf_token %}
+             <button type="submit" class="logout-btn">
+             <span class="logout-icon">⎋</span>
+             Logout
+             </button>
+            </form>
+        </nav>
+    </aside>
+
+    <!-- MAIN -->
+    <main class="main">
+
+        <!-- HEADER -->
+        <header class="topbar">
+            <div class="title">Dashboard</div>
+            <div class="user">👤 {{ request.user.username }}</div>
+        </header>
+
+        <!-- CONTENT -->
+        <section class="content">
+            {% block content %}{% endblock %}
+        </section>
+
+    </main>
+
+</div>
+<script>
+function confirmLogout() {
+    return confirm("Are you sure you want to logout?");
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,23 @@
+from django.urls import path
+from . import views
+
+urlpatterns = [
+    path('admin/', views.admin_dashboard, name='admin_dashboard'),
+    path('teacher/', views.teacher_dashboard, name='teacher_dashboard'),
+    path('data-entry/', views.data_entry_dashboard, name='data_entry_dashboard'),
+    path('users/', views.manage_users, name='manage_users'),
+    path('add-user/', views.add_user, name='add_user'),
+    path('edit-user/<int:user_id>/', views.edit_user, name='edit_user'),
+    path('toggle-user/<int:user_id>/', views.toggle_user, name='toggle_user'),
+    path('delete-user/<int:user_id>/', views.delete_user, name='delete_user'),
+    path('', views.dashboard_redirect, name='dashboard_home'),
+    path('academics/', views.manage_academics, name='manage_academics'),
+    path('add-class/', views.add_class, name='add_class'),
+    path('add-section/', views.add_section, name='add_section'),
+    path('delete-class/<int:id>/', views.delete_class, name='delete_class'),
+    path('delete-section/<int:id>/', views.delete_section, name='delete_section'),
+    path('subjects/', views.manage_subjects, name='manage_subjects'),
+    path('add-subject/', views.add_subject, name='add_subject'),
+    path('assign-subject/', views.assign_teacher_subject, name='assign_subject'),
+    path('delete-mapping/<int:id>/', views.delete_mapping, name='delete_mapping'),
+]

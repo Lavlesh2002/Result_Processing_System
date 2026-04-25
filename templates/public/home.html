@@ -1,0 +1,51 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Result Processing System</title>
+
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+
+<!-- NAVBAR -->
+<div class="navbar">
+    <h2>Result System</h2>
+    <span>Academic Portal</span>
+</div>
+
+<!-- HERO SECTION -->
+<div class="hero">
+    <h1>Welcome to Result Processing System</h1>
+    <p>Access results and manage academic records efficiently</p>
+</div>
+
+<!-- OPTIONS -->
+<div class="container">
+
+    <a href="/accounts/login/">
+        <div class="card">Admin Login</div>
+    </a>
+
+    <a href="/accounts/login/">
+        <div class="card">Teacher Login</div>
+    </a>
+
+    <a href="/accounts/login/">
+        <div class="card">Data Entry Login</div>
+    </a>
+
+    <a href="{% url 'result' %}">
+        <div class="card">View Result</div>
+    </a>
+
+</div>
+
+<!-- FOOTER -->
+<footer>
+    © 2026 Result Processing System | Designed for Academic Management
+</footer>
+
+</body>
+</html>

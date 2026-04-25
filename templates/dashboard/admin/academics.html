@@ -1,0 +1,50 @@
+{% extends 'dashboard/base.html' %}
+
+{% block content %}
+
+<h2 class="page-title">Class & Section Management</h2>
+
+<div class="academic-actions">
+    <a href="{% url 'add_class' %}" class="btn-add">+ Add Class</a>
+    <a href="{% url 'add_section' %}" class="btn-add">+ Add Section</a>
+</div>
+
+<div class="table-card">
+    <h3>Classes</h3>
+    <table>
+        <tr>
+            <th>Class</th>
+            <th>Action</th>
+        </tr>
+        {% for c in classes %}
+        <tr>
+            <td>Class {{ c.name }}</td>
+            <td>
+                <a href="{% url 'delete_class' c.id %}" class="btn-delete">Delete</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+
+<div class="table-card">
+    <h3>Sections</h3>
+    <table>
+        <tr>
+            <th>Class</th>
+            <th>Section</th>
+            <th>Action</th>
+        </tr>
+        {% for s in sections %}
+        <tr>
+            <td>Class {{ s.class_name.name }}</td>
+            <td>{{ s.name }}</td>
+            <td>
+                <a href="{% url 'delete_section' s.id %}" class="btn-delete">Delete</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+
+{% endblock %}

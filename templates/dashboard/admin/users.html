@@ -1,0 +1,55 @@
+{% extends 'dashboard/base.html' %}
+
+{% block content %}
+
+<div class="page-actions">
+    <h2>User Management</h2>
+
+    <a href="{% url 'add_user' %}" class="btn-primary">
+        + Add User
+    </a>
+</div>
+
+<div class="table-container">
+    <table>
+        <thead>
+            <tr>
+                <th>Username</th>
+                <th>Email</th>
+                <th>Role</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            {% for user in users %}
+            <tr>
+                <td>{{ user.username }}</td>
+                <td>{{ user.email }}</td>
+                <td>{{ user.role }}</td>
+
+                <td>
+                    {% if user.is_active %}
+                        <span class="status active">Active</span>
+                    {% else %}
+                        <span class="status blocked">Blocked</span>
+                    {% endif %}
+                </td>
+
+                <td>
+                    <a href="{% url 'edit_user' user.id %}" class="action-btn edit-btn">Edit</a>
+
+                    <a href="{% url 'toggle_user' user.id %}" class="action-btn block-btn">
+                        {% if user.is_active %}Block{% else %}Unblock{% endif %}
+                    </a>
+
+                    <a href="{% url 'delete_user' user.id %}" class="action-btn delete-btn">Delete</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% endblock %}

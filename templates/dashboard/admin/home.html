@@ -1,0 +1,55 @@
+{% extends 'dashboard/base.html' %}
+
+{% block content %}
+
+<h2 class="page-title">Admin Dashboard</h2>
+
+<!-- STATS CARDS -->
+<div class="dashboard-grid">
+
+    <div class="dash-card card-blue">
+        <h4>Total Users</h4>
+        <p>{{ users_count|default:"0" }}</p>
+    </div>
+
+    <div class="dash-card card-green">
+        <h4>Total Classes</h4>
+        <p>{{ class_count|default:"0" }}</p>
+    </div>
+
+    <div class="dash-card card-orange">
+        <h4>Total Subjects</h4>
+        <p>{{ subject_count|default:"0" }}</p>
+    </div>
+
+    <div class="dash-card card-purple">
+        <h4>Total Teachers</h4>
+        <p>{{ teacher_count|default:"0" }}</p>
+    </div>
+
+    <!-- NEW CARDS -->
+
+    <div class="dash-card card-teal">
+        <h4>Total Students</h4>
+        <p>{{ student_count|default:"0" }}</p>
+    </div>
+
+    <div class="dash-card card-red">
+        <h4>Pending Results</h4>
+        <p>{{ pending_results|default:"0" }}</p>
+    </div>
+
+    <div class="dash-card card-pink">
+        <h4>Completed Results</h4>
+        <p>{{ completed_results|default:"0" }}</p>
+    </div>
+
+</div>
+
+<!-- ACTIVITY -->
+<div class="card">
+    <h3>Recent Activity</h3>
+    <p>No recent activity</p>
+</div>
+
+{% endblock %}

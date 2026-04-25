@@ -1,0 +1,20 @@
+{% extends 'dashboard/base.html' %}
+
+{% block content %}
+
+<div class="form-container">
+    <h2>Add Class</h2>
+
+    <form method="POST" class="form-card">
+        {% csrf_token %}
+
+        <div class="form-group">
+            <label>Select Class</label>
+            {{ form.name }}
+        </div>
+
+        <button type="submit" class="btn-submit">Add Class</button>
+    </form>
+</div>
+
+{% endblock %}

@@ -1,0 +1,27 @@
+{% extends 'dashboard/base.html' %}
+
+{% block content %}
+
+<div class="form-container">
+    <h2>Assign Subjects to Teacher</h2>
+
+    <form method="POST" class="form-card">
+        {% csrf_token %}
+
+        <div class="form-group">
+            <label>Select Teacher</label>
+            {{ form.teacher }}
+        </div>
+
+        <div class="form-group">
+            <label>Select Subjects</label>
+            <div class="checkbox-group">
+                {{ form.subjects }}
+            </div>
+        </div>
+
+        <button type="submit" class="btn-submit">Assign</button>
+    </form>
+</div>
+
+{% endblock %}

@@ -1,0 +1,42 @@
+{% extends 'dashboard/base.html' %}
+
+{% block content %}
+
+<h2 class="page-title">Subject & Teacher Mapping</h2>
+
+<div class="subject-actions">
+    <a href="{% url 'add_subject' %}" class="btn-primary">+ Add Subject</a>
+    <a href="{% url 'assign_subject' %}" class="btn-primary">+ Assign Subject</a>
+</div>
+
+<div class="card">
+    <h3>Subjects</h3>
+    <ul>
+        {% for s in subjects %}
+            <li>{{ s }}</li>
+        {% endfor %}
+    </ul>
+</div>
+
+<div class="card">
+    <h3>Teacher Assignments</h3>
+    <table class="table">
+        <tr>
+            <th>Teacher</th>
+            <th>Subject</th>
+            <th>Action</th>
+        </tr>
+
+        {% for m in mappings %}
+        <tr>
+            <td>{{ m.teacher.username }}</td>
+            <td>{{ m.subject }}</td>
+            <td>
+                <a href="{% url 'delete_mapping' m.id %}" class="btn-danger">Delete</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+
+{% endblock %}

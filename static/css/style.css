@@ -1,0 +1,88 @@
+/* RESET */
+body {
+    margin: 0;
+    font-family: 'Segoe UI', sans-serif;
+    background: #f4f6f9;
+}
+
+/* NAVBAR */
+.navbar {
+    background: #2c3e50;
+    color: white;
+    padding: 15px 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.navbar h2 {
+    margin: 0;
+}
+
+.navbar span {
+    font-size: 14px;
+    opacity: 0.8;
+}
+
+/* HERO SECTION */
+.hero {
+    text-align: center;
+    margin-top: 40px;
+}
+
+.hero h1 {
+    color: #2c3e50;
+    margin-bottom: 10px;
+}
+
+.hero p {
+    color: #555;
+}
+
+/* CARD CONTAINER */
+.container {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    flex-wrap: wrap;
+    margin: 50px auto;
+    max-width: 1000px;
+}
+
+/* CARD */
+.card {
+    background: white;
+    width: 220px;
+    height: 150px;
+    border-radius: 10px;
+    box-shadow: 0 6px 15px rgba(0,0,0,0.1);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    font-size: 18px;
+    font-weight: bold;
+    transition: 0.3s;
+    cursor: pointer;
+}
+
+.card:hover {
+    transform: translateY(-8px);
+    background: #3498db;
+    color: white;
+}
+
+/* LINKS */
+a {
+    text-decoration: none;
+    color: inherit;
+}
+
+/* FOOTER */
+footer {
+    background: #2c3e50;
+    color: white;
+    text-align: center;
+    padding: 15px;
+    font-size: 14px;
+}

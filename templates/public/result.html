@@ -1,0 +1,47 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>View Result</title>
+
+    <link rel="stylesheet" href="{% static 'css/result.css' %}">
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+    Result Processing System
+</header>
+
+<!-- MAIN -->
+<div class="container">
+    <h2>Check Your Result</h2>
+
+    <form method="GET">
+        <div class="input-group">
+            <input type="text" name="roll" placeholder="Enter Roll Number" required>
+        </div>
+
+        <button type="submit" class="search-btn">Search Result</button>
+    </form>
+
+    <!-- RESULT DISPLAY (future dynamic data) -->
+    {% if result %}
+    <div class="result-box">
+        <p><strong>Name:</strong> {{ result.name }}</p>
+        <p><strong>Roll Number:</strong> {{ result.roll_number }}</p>
+        <p><strong>Total Marks:</strong> {{ result.total }}</p>
+        <p><strong>Grade:</strong> {{ result.grade }}</p>
+    </div>
+    {% endif %}
+
+</div>
+
+<!-- FOOTER -->
+<footer>
+    © 2026 Result Processing System
+</footer>
+
+</body>
+</html>
