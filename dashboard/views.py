@@ -6,8 +6,11 @@ from academics.models import Class, Section
 from academics.forms import ClassForm, SectionForm
 from academics.models import Subject, TeacherSubject
 from academics.forms import SubjectForm, TeacherSubjectForm
-# from students.models import Student   # (you will create this soon)
-# from results.models import Result     # (future module)
+from student.models import Student   
+from student.forms import StudentForm
+from results.models import Result  
+from django.db.models import Sum
+
 # ================= DASHBOARD REDIRECT ================= #
 
 @login_required
@@ -30,7 +33,35 @@ def dashboard_redirect(request):
 def admin_dashboard(request):
     if request.user.role != 'admin':
         return redirect('login')
-    return render(request, 'dashboard/admin/home.html')
+
+    # ================= COUNTS ================= #
+    users_count = User.objects.filter(is_superuser=False).count()
+
+    class_count = Class.objects.count()
+    subject_count = Subject.objects.count()
+    teacher_count = User.objects.filter(role='teacher').count()
+    student_count = Student.objects.count()
+
+    # ================= RESULTS ================= #
+    completed_results = Result.objects.count()
+
+    # 🔥 total expected results = students × subjects
+    total_expected = student_count * subject_count
+
+    pending_results = total_expected - completed_results
+
+    # ================= CONTEXT ================= #
+    context = {
+        'users_count': users_count,
+        'class_count': class_count,
+        'subject_count': subject_count,
+        'teacher_count': teacher_count,
+        'student_count': student_count,
+        'completed_results': completed_results,
+        'pending_results': pending_results,
+    }
+
+    return render(request, 'dashboard/admin/home.html', context)
 
 
 @login_required
@@ -273,3 +304,321 @@ def delete_mapping(request, id):
 #     }
 
 #     return render(request, 'dashboard/admin/home.html', context)
+
+@login_required
+def manage_students(request):
+    if request.user.role != 'data_entry':
+        return redirect('login')
+
+    students = Student.objects.all()
+
+    return render(request, 'dashboard/data_entry/students.html', {
+        'students': students
+    })
+
+@login_required
+def add_student(request):
+    if request.user.role != 'data_entry':
+        return redirect('login')
+
+    if request.method == 'POST':
+        form = StudentForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('manage_students')
+    else:
+        form = StudentForm()
+
+    # 🔥 ADD THIS LINE
+    sections = Section.objects.all()
+
+    return render(request, 'dashboard/data_entry/add_student.html', {
+        'form': form,
+        'sections': sections   # 🔥 ADD THIS
+    })
+
+@login_required
+def edit_student(request, student_id):
+    if request.user.role != 'data_entry':
+        return redirect('login')
+
+    student = get_object_or_404(Student, id=student_id)
+
+    if request.method == 'POST':
+        form = StudentForm(request.POST, instance=student)
+        if form.is_valid():
+            form.save()
+            return redirect('manage_students')
+    else:
+        form = StudentForm(instance=student)
+
+    # 🔥 ADD THIS
+    sections = Section.objects.all()
+
+    return render(request, 'dashboard/data_entry/edit_student.html', {
+        'form': form,
+        'sections': sections   # 🔥 THIS IS REQUIRED
+    })
+
+#=======Marks Entry By Teacher=================#
+@login_required
+def enter_marks(request):
+    if request.user.role != 'teacher':
+        return redirect('login')
+
+    # 🔥 GET ALL SUBJECTS ASSIGNED TO TEACHER
+    teacher_subjects = TeacherSubject.objects.filter(teacher=request.user)
+    subjects = [ts.subject for ts in teacher_subjects]
+
+    classes = Class.objects.all()
+    sections = Section.objects.all()
+
+    students = None
+    existing_marks = {}
+    selected_subject = None
+
+    # ================= POST HANDLING ================= #
+    if request.method == 'POST':
+
+        subject_id = request.POST.get('subject')
+        class_id = request.POST.get('class')
+        section_id = request.POST.get('section')
+
+        # 🔒 SAFE SUBJECT FETCH
+        if subject_id:
+            selected_subject = Subject.objects.filter(id=subject_id).first()
+
+        # 🔒 ONLY PROCEED IF ALL REQUIRED VALUES EXIST
+        if selected_subject and class_id and section_id:
+
+            students = Student.objects.filter(
+                student_class_id=class_id,
+                section_id=section_id
+            )
+
+            # 🔥 LOAD EXISTING MARKS
+            results = Result.objects.filter(
+                subject=selected_subject,
+                student__in=students
+            )
+
+            existing_marks = {
+                r.student.id: r.marks for r in results
+            }
+
+            # 🔥 SAVE MARKS ONLY IF MARKS SUBMITTED
+            for student in students:
+                marks = request.POST.get(f'marks_{student.id}')
+
+                # skip empty inputs
+                if marks is None or marks == '':
+                    continue
+
+                try:
+                    marks = int(marks)
+                except ValueError:
+                    continue
+
+                Result.objects.update_or_create(
+                    student=student,
+                    subject=selected_subject,
+                    defaults={
+                        'teacher': request.user,
+                        'marks': marks
+                    }
+                )
+
+    # ================= RESPONSE ================= #
+    return render(request, 'dashboard/teacher/enter_marks.html', {
+        'subjects': subjects,
+        'classes': classes,
+        'sections': sections,
+        'students': students,
+        'existing_marks': existing_marks,
+        'selected_subject': selected_subject
+    })
+
+
+#=======RESULT OF ADMIN ================#
+@login_required
+def admin_results(request):
+    if request.user.role != 'admin':
+        return redirect('login')
+
+    classes = Class.objects.all()
+    sections = []
+    selected_class = None
+    selected_section = None
+    student_data = []
+
+# ✅ DEFINE class_id FIRST (FIX)
+    class_id = None
+    section_id = None
+    if request.method == 'POST':
+      class_id = request.POST.get('class')
+      section_id = request.POST.get('section')
+
+    if class_id:
+        sections = Section.objects.filter(class_name_id=class_id)
+         
+    selected_class = None
+    selected_section = None
+    student_data = []
+
+    # ✅ SUBJECT MAP (MATCHES YOUR DB)
+    subject_map = {
+        "L1": "l1",
+        "L2": "l2",
+        "L3": "l3",
+        "SCI": "science",
+        "MATH": "mathematics",
+        "SOC": "social_science"
+    }
+
+    if request.method == 'POST':
+        class_id = request.POST.get('class')
+        section_id = request.POST.get('section')
+
+        selected_class = class_id
+        selected_section = section_id
+
+        students = Student.objects.filter(
+            student_class_id=class_id,
+            section_id=section_id
+        )
+
+        for student in students:
+
+            row = {
+                'roll': student.roll_number,
+                'name': student.name,
+                'marks': {
+                    'l1': 0,
+                    'l2': 0,
+                    'l3': 0,
+                    'science': 0,
+                    'mathematics': 0,
+                    'social_science': 0,
+                },
+                'total': 0,
+                'percentage': 0,
+                'status': 'Pass'
+            }
+
+            fail = False
+
+            # 🔥 FETCH RESULTS
+            results = Result.objects.filter(student=student)
+
+            for r in results:
+                subject_name = r.subject.name.strip().upper()
+                key = subject_map.get(subject_name)
+
+                if key:
+                    row['marks'][key] = r.marks
+
+                    if r.marks < 33:
+                        fail = True
+
+            # ✅ IMPORTANT: CALCULATE TOTAL AFTER ASSIGNING MARKS
+            total = sum(row['marks'].values())
+
+            row['total'] = total
+            row['percentage'] = round(total / len(subject_map), 2)
+            row['status'] = "Fail" if fail else "Pass"
+
+            student_data.append(row)
+
+    return render(request, 'dashboard/admin/results.html', {
+        'classes': classes,
+        'sections': sections,
+        'students': student_data,
+        'selected_class': selected_class,
+        'selected_section': selected_section
+    })
+
+from django.http import JsonResponse
+
+def get_sections(request):
+    class_id = request.GET.get('class_id')
+    sections = Section.objects.filter(class_name_id=class_id)
+
+    data = list(sections.values('id', 'name'))
+
+    return JsonResponse(data, safe=False)
+
+from django.http import HttpResponse
+from openpyxl import Workbook
+
+@login_required
+def export_results_excel(request):
+    if request.user.role != 'admin':
+        return redirect('login')
+
+    class_id = request.GET.get('class')
+    section_id = request.GET.get('section')
+
+    students = Student.objects.filter(
+        student_class_id=class_id,
+        section_id=section_id
+    )
+
+    subject_map = {
+        "L1": "l1",
+        "L2": "l2",
+        "L3": "l3",
+        "SCI": "science",
+        "MATH": "mathematics",
+        "SOC": "social_science"
+    }
+
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Results"
+
+    # 🔥 HEADER
+    ws.append([
+        "Roll No", "Name",
+        "L1", "L2", "L3",
+        "Science", "Maths", "Social",
+        "Total", "Percentage", "Status"
+    ])
+
+    for student in students:
+        results = Result.objects.filter(student=student)
+
+        marks = {v: 0 for v in subject_map.values()}
+        fail = False
+
+        for r in results:
+            key = subject_map.get(r.subject.name)
+            if key:
+                marks[key] = r.marks
+                if r.marks < 33:
+                    fail = True
+
+        total = sum(marks.values())
+        percentage = round(total / 6, 2)
+        status = "Fail" if fail else "Pass"
+
+        ws.append([
+            student.roll_number,
+            student.name,
+            marks['l1'],
+            marks['l2'],
+            marks['l3'],
+            marks['science'],
+            marks['mathematics'],
+            marks['social_science'],
+            total,
+            percentage,
+            status
+        ])
+
+    response = HttpResponse(
+        content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    )
+    response['Content-Disposition'] = 'attachment; filename=results.xlsx'
+
+    wb.save(response)
+    return response

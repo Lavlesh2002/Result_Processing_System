@@ -1,0 +1,143 @@
+{% extends 'dashboard/base.html' %}
+{% load custom_tags %}
+
+{% block content %}
+
+<h2 class="page-title">
+    Enter Marks {% if selected_subject %}({{ selected_subject }}){% endif %}
+</h2>
+
+<form method="POST">
+    {% csrf_token %}
+
+    <!-- SUBJECT -->
+    <div class="form-group">
+        <label>Select Subject</label>
+        <select name="subject" required>
+            <option value="">Select Subject</option>
+            {% for s in subjects %}
+                <option value="{{ s.id }}"
+                    {% if selected_subject and s.id == selected_subject.id %}selected{% endif %}>
+                    {{ s }}
+                </option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <!-- CLASS -->
+    <div class="form-group">
+        <label>Select Class</label>
+        <select id="class-select" name="class" required>
+            <option value="">Select Class</option>
+            {% for c in classes %}
+                <option value="{{ c.id }}"
+                    {% if request.POST.class == c.id|stringformat:"s" %}selected{% endif %}>
+                    {{ c }}
+                </option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <!-- SECTION -->
+    <div class="form-group">
+        <label>Select Section</label>
+        <select id="section-select" name="section" required>
+            <option value="">Select Section</option>
+        </select>
+    </div>
+
+    <button type="submit" class="btn-primary">Load Students</button>
+
+    {% if students %}
+    <hr>
+
+    <div class="card">
+        <h3>Students List</h3>
+
+        <table class="table">
+            <tr>
+                <th>Student</th>
+                <th>Marks</th>
+            </tr>
+
+            {% for student in students %}
+            <tr>
+                <td>{{ student.name }}</td>
+                <td>
+                    <input type="number"
+                           name="marks_{{ student.id }}"
+                           min="0"
+                           max="100"
+                           value="{{ existing_marks|get_item:student.id }}"
+                           required>
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+
+        <button type="submit" class="btn-primary">Save Marks</button>
+    </div>
+
+    {% endif %}
+
+</form>
+
+<!-- ================= JAVASCRIPT ================= -->
+
+<script>
+
+// 🔥 ALL SECTIONS FROM BACKEND
+const allSections = [
+    {% for s in sections %}
+        {
+            id: "{{ s.id }}",
+            name: "{{ s.name }}",
+            class_id: "{{ s.class_name.id }}"
+        },
+    {% endfor %}
+];
+
+// ELEMENTS
+const classSelect = document.getElementById("class-select");
+const sectionSelect = document.getElementById("section-select");
+
+// PRESELECT VALUES (AFTER POST)
+const selectedClass = "{{ request.POST.class|default:'' }}";
+const selectedSection = "{{ request.POST.section|default:'' }}";
+
+// FUNCTION TO LOAD SECTIONS
+function loadSections(classId, selectedSectionId=null) {
+
+    sectionSelect.innerHTML = '<option value="">Select Section</option>';
+
+    if (!classId) return;
+
+    allSections.forEach(function (sec) {
+        if (sec.class_id === classId) {
+
+            const option = document.createElement("option");
+            option.value = sec.id;
+            option.textContent = sec.name;
+
+            if (sec.id === selectedSectionId) {
+                option.selected = true;
+            }
+
+            sectionSelect.appendChild(option);
+        }
+    });
+}
+
+// INITIAL LOAD (IMPORTANT)
+if (selectedClass) {
+    loadSections(selectedClass, selectedSection);
+}
+
+// ON CLASS CHANGE
+classSelect.addEventListener("change", function () {
+    loadSections(this.value);
+});
+
+</script>
+
+{% endblock %}

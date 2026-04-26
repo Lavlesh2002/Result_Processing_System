@@ -1,0 +1,143 @@
+{% extends 'dashboard/base.html' %}
+
+{% block content %}
+
+<h2 class="page-title">Results Panel</h2>
+
+<!-- ✅ FILTER FORM (IMPORTANT FIX) -->
+<form method="POST" class="filter-form">
+    {% csrf_token %}
+
+    <div class="form-row">
+
+        <!-- CLASS -->
+        <select id="class-select" name="class" required>
+            <option value="">Select Class</option>
+            {% for c in classes %}
+                <option value="{{ c.id }}"
+                {% if selected_class == c.id|stringformat:"s" %}selected{% endif %}>
+                    {{ c }}
+                </option>
+            {% endfor %}
+        </select>
+
+        <!-- SECTION -->
+        <select id="section-select" name="section" required>
+            <option value="">Select Section</option>
+            {% for s in sections %}
+                <option value="{{ s.id }}"
+                {% if selected_section == s.id|stringformat:"s" %}selected{% endif %}>
+                    {{ s.name }}
+                </option>
+            {% endfor %}
+        </select>
+
+        <button type="submit" class="btn-primary">View Results</button>
+        <a href="{% url 'export_results' %}?class={{ selected_class }}&section={{ selected_section }}"
+         class="btn-success">
+          Download Excel
+        </a>
+
+    </div>
+</form>
+
+<!-- EMPTY STATE -->
+{% if not students %}
+<div class="card empty-state">
+    <p>Select class and section to view results.</p>
+</div>
+{% endif %}
+
+<!-- RESULTS TABLE -->
+{% if students %}
+<div class="card">
+    <table class="table results-table">
+        <thead>
+            <tr>
+                <th>Roll No</th>
+                <th>Name</th>
+                <th>L1</th>
+                <th>L2</th>
+                <th>L3</th>
+                <th>Science</th>
+                <th>Maths</th>
+                <th>Social Sci</th>
+                <th>Total</th>
+                <th>%</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            {% for s in students %}
+            <tr>
+                <td>{{ s.roll }}</td>
+                <td>{{ s.name }}</td>
+
+                <td>{{ s.marks.l1|default:"0" }}</td>
+                <td>{{ s.marks.l2|default:"0" }}</td>
+                <td>{{ s.marks.l3|default:"0" }}</td>
+                <td>{{ s.marks.science|default:"0" }}</td>
+                <td>{{ s.marks.mathematics|default:"0" }}</td>
+                <td>{{ s.marks.social_science|default:"0" }}</td>
+
+                <td><strong>{{ s.total }}</strong></td>
+                <td><strong>{{ s.percentage }}%</strong></td>
+
+                <td>
+                    {% if s.status == "Pass" %}
+                        <span class="status-pass">Pass</span>
+                    {% else %}
+                        <span class="status-fail">Fail</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+
+    </table>
+</div>
+{% endif %}
+
+<!-- ✅ SAFE JS -->
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const classSelect = document.getElementById("class-select");
+    const sectionDropdown = document.getElementById("section-select");
+
+    if (classSelect) {
+        classSelect.addEventListener("change", function() {
+
+            const classId = this.value;
+
+            if (!classId) {
+                sectionDropdown.innerHTML = '<option value="">Select Section</option>';
+                return;
+            }
+
+            sectionDropdown.innerHTML = '<option value="">Loading...</option>';
+
+            fetch(`/dashboard/get-sections/?class_id=${classId}`)
+                .then(response => response.json())
+                .then(data => {
+
+                    sectionDropdown.innerHTML = '<option value="">Select Section</option>';
+
+                    data.forEach(section => {
+                        sectionDropdown.innerHTML += 
+                            `<option value="${section.id}">${section.name}</option>`;
+                    });
+
+                })
+                .catch(error => {
+                    console.error("Error loading sections:", error);
+                    sectionDropdown.innerHTML = '<option value="">Error loading sections</option>';
+                });
+        });
+    }
+
+});
+</script>
+
+{% endblock %}

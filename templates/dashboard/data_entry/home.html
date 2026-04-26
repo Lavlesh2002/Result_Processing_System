@@ -1,10 +1,25 @@
 {% extends 'dashboard/base.html' %}
 
 {% block content %}
-<h2>Data Entry Dashboard</h2>
 
-<div class="grid">
-    <div class="card blue">Total Entries</div>
-    <div class="card orange">Pending Work</div>
+<h2 class="page-title">Data Entry Dashboard</h2>
+
+<div class="dashboard-grid">
+
+    <div class="dash-card card-blue">
+        <h4>Total Students</h4>
+        <p>{{ student_count|default:"0" }}</p>
+    </div>
+
+    <div class="dash-card card-green">
+        <h4>Manage Students</h4>
+        <p>
+            <a href="{% url 'manage_students' %}" style="color:white; text-decoration:underline;">
+                Go to Students
+            </a>
+        </p>
+    </div>
+
 </div>
+
 {% endblock %}

@@ -15,7 +15,7 @@
 
         <nav>
             <a href="{% url 'dashboard_home' %}">Dashboard</a>
-            <a href="#">Results</a>
+            <a href="{% url 'admin_results' %}">Results</a>
 
             {% if request.user.role == 'admin' %}
                 <div class="nav-section">ADMIN</div>
@@ -29,7 +29,12 @@
                 <a href="#">Fraud Detection</a>
                 <a href="#">APAAR Validation</a>
             {% endif %}
-
+            {% if request.user.role == 'data_entry' %}
+             <a href="{% url 'manage_students' %}">Students</a>
+            {% endif %}
+            {% if request.user.role == 'teacher' %}
+            <a href="{% url 'enter_marks' %}">Enter Marks</a>
+            {% endif %}
             <div class="nav-section">ACCOUNT</div>
             <form method="POST" action="{% url 'logout' %}" class="logout-form" onsubmit="return confirmLogout()">
              {% csrf_token %}

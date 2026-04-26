@@ -20,4 +20,11 @@ urlpatterns = [
     path('add-subject/', views.add_subject, name='add_subject'),
     path('assign-subject/', views.assign_teacher_subject, name='assign_subject'),
     path('delete-mapping/<int:id>/', views.delete_mapping, name='delete_mapping'),
+    path('students/', views.manage_students, name='manage_students'),
+    path('students/add/', views.add_student, name='add_student'),
+    path('students/edit/<int:student_id>/', views.edit_student, name='edit_student'),
+    path('enter-marks/', views.enter_marks, name='enter_marks'),
+    path('results/', views.admin_results, name='admin_results'),
+    path('get-sections/', views.get_sections, name='get_sections'),
+    path('export-results/', views.export_results_excel, name='export_results'),
 ]

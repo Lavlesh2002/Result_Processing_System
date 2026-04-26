@@ -1,0 +1,104 @@
+{% extends 'dashboard/base.html' %}
+
+{% block content %}
+
+<div class="form-container">
+
+    <div class="form-card">
+
+        <h2 class="page-title">Add Student</h2>
+
+        <form method="POST">
+            {% csrf_token %}
+
+            <div class="form-group">
+                <label>Student Name</label>
+                {{ form.name }}
+            </div>
+
+            <div class="form-group">
+                <label>Roll Number</label>
+                {{ form.roll_number }}
+            </div>
+
+            <!-- CLASS -->
+            <div class="form-group">
+                <label>Class</label>
+                <select id="class-select" name="student_class" required>
+                    <option value="">Select Class</option>
+                    {% for c in form.student_class.field.queryset %}
+                        <option value="{{ c.id }}">{{ c }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- SECTION -->
+            <div class="form-group">
+                <label>Section</label>
+                <select id="section-select" name="section" required disabled>
+                    <option value="">Select Section</option>
+                </select>
+            </div>
+
+            <button type="submit" class="btn-primary">Save Student</button>
+        </form>
+
+    </div>
+
+</div>
+
+<!-- ================= JAVASCRIPT ================= -->
+
+<script>
+
+// 🔥 ALL SECTIONS FROM BACKEND
+const allSections = [
+    {% for s in sections %}
+        {
+            id: "{{ s.id }}",
+            name: "{{ s.name }}",
+            class_id: "{{ s.class_name.id }}"
+        },
+    {% endfor %}
+];
+
+// ELEMENTS
+const classSelect = document.getElementById("class-select");
+const sectionSelect = document.getElementById("section-select");
+
+// DISABLE INITIALLY
+sectionSelect.disabled = true;
+
+// ON CLASS CHANGE
+classSelect.addEventListener("change", function () {
+
+    const selectedClass = this.value;
+
+    // RESET SECTION
+    sectionSelect.innerHTML = '<option value="">Select Section</option>';
+
+    if (!selectedClass) {
+        sectionSelect.disabled = true;
+        return;
+    }
+
+    // ENABLE SECTION
+    sectionSelect.disabled = false;
+
+    // FILTER SECTIONS
+    allSections.forEach(function (sec) {
+        if (sec.class_id === selectedClass) {
+
+            const option = document.createElement("option");
+            option.value = sec.id;
+            option.textContent = sec.name;
+
+            sectionSelect.appendChild(option);
+        }
+    });
+
+});
+
+</script>
+
+{% endblock %}

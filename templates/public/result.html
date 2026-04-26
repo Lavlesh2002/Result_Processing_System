@@ -1,47 +1,77 @@
 {% load static %}
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
     <title>View Result</title>
-
     <link rel="stylesheet" href="{% static 'css/result.css' %}">
 </head>
 <body>
 
-<!-- HEADER -->
-<header>
-    Result Processing System
-</header>
+<div class="result-container">
 
-<!-- MAIN -->
-<div class="container">
-    <h2>Check Your Result</h2>
+    <h2>Check Result</h2>
 
-    <form method="GET">
-        <div class="input-group">
-            <input type="text" name="roll" placeholder="Enter Roll Number" required>
-        </div>
-
-        <button type="submit" class="search-btn">Search Result</button>
+    <!-- SEARCH FORM -->
+    <form method="POST" class="result-form">
+        {% csrf_token %}
+        <input type="text" name="roll_number" placeholder="Enter Roll Number" required>
+        <button type="submit">View Result</button>
     </form>
 
-    <!-- RESULT DISPLAY (future dynamic data) -->
-    {% if result %}
-    <div class="result-box">
-        <p><strong>Name:</strong> {{ result.name }}</p>
-        <p><strong>Roll Number:</strong> {{ result.roll_number }}</p>
-        <p><strong>Total Marks:</strong> {{ result.total }}</p>
-        <p><strong>Grade:</strong> {{ result.grade }}</p>
+    {% if student %}
+
+    <div class="result-card">
+
+        <h3>{{ student.name }}</h3>
+        <p>Class: {{ student.student_class }}</p>
+        <p>Section: {{ student.section }}</p>
+
+        <table>
+            <tr>
+                <th>Subject</th>
+                <th>Marks</th>
+            </tr>
+
+            {% for r in results %}
+            <tr>
+                <td>{{ r.subject }}</td>
+                <td>{{ r.marks }}</td>
+            </tr>
+            {% endfor %}
+
+            <tr class="total">
+                <td>Total</td>
+                <td>{{ total }}</td>
+            </tr>
+            <tr class="total">
+                 <td>Percentage</td>
+                 <td>{{ percentage }}%</td>
+            </tr>
+
+            <tr class="total">
+                 <td>Status</td>
+                 <td>
+                  {% if status == "Pass" %}
+                  <span style="color:green;">Pass</span>
+                  {% else %}
+                  <span style="color:red;">Fail</span>
+                  {% endif %}
+                 </td>
+            </tr>
+        </table>
+        
+
+       <a href="{% url 'download_result_pdf' student.roll_number %}" class="btn-primary">
+          Download PDF
+       </a>  
+
     </div>
+
+    {% elif request.method == 'POST' %}
+        <p class="error">No student found!</p>
     {% endif %}
 
 </div>
-
-<!-- FOOTER -->
-<footer>
-    © 2026 Result Processing System
-</footer>
 
 </body>
 </html>

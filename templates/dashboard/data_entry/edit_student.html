@@ -1,0 +1,109 @@
+{% extends 'dashboard/base.html' %}
+
+{% block content %}
+
+<div class="form-container">
+
+    <div class="form-card">
+
+        <h2 class="page-title">Edit Student</h2>
+
+        <form method="POST">
+            {% csrf_token %}
+
+            <div class="form-group">
+                <label>Student Name</label>
+                {{ form.name }}
+            </div>
+
+            <div class="form-group">
+                <label>Roll Number</label>
+                {{ form.roll_number }}
+            </div>
+
+            <!-- CLASS -->
+            <div class="form-group">
+                <label>Class</label>
+                <select id="class-select" name="student_class" required>
+                    {% for c in form.student_class.field.queryset %}
+                        <option value="{{ c.id }}"
+                            {% if c.id == form.instance.student_class.id %}selected{% endif %}>
+                            {{ c }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- SECTION -->
+            <div class="form-group">
+                <label>Section</label>
+                <select id="section-select" name="section" required>
+                    <option value="">Select Section</option>
+                </select>
+            </div>
+
+            <button type="submit" class="btn-primary">Update Student</button>
+
+        </form>
+
+    </div>
+
+</div>
+
+<!-- ================= JAVASCRIPT ================= -->
+
+<script>
+
+// ALL SECTIONS FROM BACKEND
+const allSections = [
+    {% for s in sections %}
+        {
+            id: "{{ s.id }}",
+            name: "{{ s.name }}",
+            class_id: "{{ s.class_name.id }}"
+        },
+    {% endfor %}
+];
+
+// ELEMENTS
+const classSelect = document.getElementById("class-select");
+const sectionSelect = document.getElementById("section-select");
+
+// CURRENT VALUES (for edit)
+const selectedClass = "{{ form.instance.student_class.id }}";
+const selectedSection = "{{ form.instance.section.id }}";
+
+// FUNCTION TO LOAD SECTIONS
+function loadSections(classId, selectedSectionId=null) {
+
+    sectionSelect.innerHTML = '<option value="">Select Section</option>';
+
+    allSections.forEach(function (sec) {
+        if (sec.class_id === classId) {
+
+            const option = document.createElement("option");
+            option.value = sec.id;
+            option.textContent = sec.name;
+
+            if (sec.id === selectedSectionId) {
+                option.selected = true;
+            }
+
+            sectionSelect.appendChild(option);
+        }
+    });
+}
+
+// INITIAL LOAD (IMPORTANT)
+if (selectedClass) {
+    loadSections(selectedClass, selectedSection);
+}
+
+// ON CLASS CHANGE
+classSelect.addEventListener("change", function () {
+    loadSections(this.value);
+});
+
+</script>
+
+{% endblock %}

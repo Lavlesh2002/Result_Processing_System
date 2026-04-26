@@ -1,82 +1,54 @@
-/* PAGE BACKGROUND */
 body {
-    margin: 0;
     font-family: Arial, sans-serif;
-    background: #f4f6f9;
+    background: #f1f5f9;
 }
 
-/* HEADER */
-header {
-    background: #2c3e50;
-    color: white;
-    padding: 15px;
-    text-align: center;
-    font-size: 22px;
-    font-weight: bold;
-}
-
-/* MAIN CONTAINER */
-.container {
-    width: 100%;
+.result-container {
     max-width: 500px;
-    margin: 60px auto;
+    margin: 50px auto;
+    text-align: center;
+}
+
+.result-form input {
+    padding: 10px;
+    width: 70%;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+}
+
+.result-form button {
+    padding: 10px 15px;
+    background: #2563eb;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.result-card {
+    margin-top: 20px;
     background: white;
-    padding: 30px;
+    padding: 20px;
     border-radius: 10px;
     box-shadow: 0 5px 15px rgba(0,0,0,0.1);
 }
 
-/* TITLE */
-.container h2 {
-    text-align: center;
-    margin-bottom: 20px;
-    color: #2c3e50;
-}
-
-/* INPUT */
-.input-group {
-    margin-bottom: 20px;
-}
-
-.input-group input {
+table {
     width: 100%;
-    padding: 12px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    font-size: 16px;
+    margin-top: 15px;
+    border-collapse: collapse;
 }
 
-/* BUTTON */
-.search-btn {
-    width: 100%;
-    padding: 12px;
-    background: #3498db;
-    border: none;
-    color: white;
-    font-size: 16px;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: 0.3s;
-}
-
-.search-btn:hover {
-    background: #2980b9;
-}
-
-/* RESULT BOX */
-.result-box {
-    margin-top: 25px;
-    padding: 15px;
-    background: #ecf0f1;
-    border-radius: 5px;
-}
-
-/* FOOTER */
-footer {
-    margin-top: 50px;
-    text-align: center;
+th, td {
     padding: 10px;
-    background: #2c3e50;
-    color: white;
-    font-size: 14px;
+    border-bottom: 1px solid #ddd;
+}
+
+.total {
+    font-weight: bold;
+}
+
+.error {
+    color: red;
+    margin-top: 15px;
 }
