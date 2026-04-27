@@ -1,0 +1,17 @@
+{% extends 'dashboard/base.html' %}
+
+{% block content %}
+
+<h2 class="page-title">Confirm Delete</h2>
+
+<div class="card">
+    <p>Are you sure you want to delete{{ student.name }}?</p>
+
+    <form method="POST">
+        {% csrf_token %}
+        <button type="submit" class="btn-danger">Yes, Delete</button>
+        <a href="javascript:history.back()" class="btn-secondary">Cancel</a>
+    </form>
+</div>
+
+{% endblock %}

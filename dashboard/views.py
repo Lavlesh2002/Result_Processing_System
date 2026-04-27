@@ -10,7 +10,8 @@ from student.models import Student
 from student.forms import StudentForm
 from results.models import Result  
 from django.db.models import Sum
-
+from audit.utils import log_action
+from student.models import ApaarProfile
 # ================= DASHBOARD REDIRECT ================= #
 
 @login_required
@@ -45,7 +46,7 @@ def admin_dashboard(request):
     # ================= RESULTS ================= #
     completed_results = Result.objects.count()
 
-    # 🔥 total expected results = students × subjects
+    #  total expected results = students × subjects
     total_expected = student_count * subject_count
 
     pending_results = total_expected - completed_results
@@ -64,18 +65,61 @@ def admin_dashboard(request):
     return render(request, 'dashboard/admin/home.html', context)
 
 
+
+
+
 @login_required
 def teacher_dashboard(request):
     if request.user.role != 'teacher':
         return redirect('login')
-    return render(request, 'dashboard/teacher/home.html')
+
+    #  TOTAL STUDENTS
+    student_count = Student.objects.count()
+
+    #  SUBJECTS ASSIGNED TO TEACHER
+    subject_qs = TeacherSubject.objects.filter(teacher=request.user)
+    subject_count = subject_qs.count()
+
+    #  GET SUBJECT IDs
+    subject_ids = subject_qs.values_list('subject_id', flat=True)
+
+    #  COMPLETED MARKS (ONLY FOR THIS TEACHER'S SUBJECTS)
+    completed_marks = Result.objects.filter(
+        subject_id__in=subject_ids
+    ).count()
+
+    #  TOTAL EXPECTED
+    total_expected = student_count * subject_count
+
+    #  PENDING
+    pending_marks = total_expected - completed_marks
+
+    context = {
+        'student_count': student_count,
+        'subject_count': subject_count,
+        'completed_marks': completed_marks,
+        'pending_marks': pending_marks
+    }
+
+    return render(request, 'dashboard/teacher/home.html', context)
 
 
 @login_required
 def data_entry_dashboard(request):
     if request.user.role != 'data_entry':
         return redirect('login')
-    return render(request, 'dashboard/data_entry/home.html')
+
+    #  TOTAL STUDENTS (GLOBAL)
+    student_count = Student.objects.count()
+
+    #  OPTIONAL (if you track who added student)
+    # student_count = Student.objects.filter(created_by=request.user).count()
+
+    context = {
+        'student_count': student_count
+    }
+
+    return render(request, 'dashboard/data_entry/home.html', context)
 
 
 # ================= USER MANAGEMENT ================= #
@@ -173,6 +217,43 @@ def manage_academics(request):
         'sections': sections
     })
 
+
+
+@login_required
+def admin_manage_students(request):
+    if request.user.role != 'admin':
+        return redirect('login')
+
+    classes = Class.objects.all()
+    sections = []
+    students = []
+
+    selected_class = None
+    selected_section = None
+
+    if request.method == 'POST':
+        class_id = request.POST.get('class')
+        section_id = request.POST.get('section')
+
+        selected_class = class_id
+        selected_section = section_id
+
+        if class_id:
+            sections = Section.objects.filter(class_name_id=class_id)
+
+        if class_id and section_id:
+            students = Student.objects.filter(
+                student_class_id=class_id,
+                section_id=section_id
+            )
+
+    return render(request, 'dashboard/admin/manage_students.html', {
+        'classes': classes,
+        'sections': sections,
+        'students': students,
+        'selected_class': selected_class,
+        'selected_section': selected_section
+    })
 @login_required
 def add_class(request):
     if request.user.role != 'admin':
@@ -286,24 +367,7 @@ def delete_mapping(request, id):
 
     return redirect('manage_subjects')
 
-# @login_required
-# def admin_dashboard(request):
-#     if request.user.role != 'admin':
-#         return redirect('login')
 
-#     context = {
-#         'users_count': User.objects.count(),
-#         'class_count': Class.objects.count(),
-#         'subject_count': Subject.objects.count(),
-#         'teacher_count': User.objects.filter(role='teacher').count(),
-
-#         # NEW
-#         'student_count': Student.objects.count(),
-#         'pending_results': Result.objects.filter(verified=False).count(),
-#         'completed_results': Result.objects.filter(verified=True).count(),
-#     }
-
-#     return render(request, 'dashboard/admin/home.html', context)
 
 @login_required
 def manage_students(request):
@@ -316,6 +380,8 @@ def manage_students(request):
         'students': students
     })
 
+
+
 @login_required
 def add_student(request):
     if request.user.role != 'data_entry':
@@ -323,23 +389,38 @@ def add_student(request):
 
     if request.method == 'POST':
         form = StudentForm(request.POST)
+
         if form.is_valid():
-            form.save()
+            # ✅ SAVE STUDENT
+            student = form.save()
+
+            # 🔥 CREATE APAAR PROFILE
+            ApaarProfile.objects.create(student=student)
+
+            # 🔥 AUDIT LOG (FIXED)
+            log_action(
+                request.user,
+                "Added Student",
+                "Student",
+                student.id   # ✅ IMPORTANT FIX
+            )
+
             return redirect('manage_students')
+
     else:
         form = StudentForm()
 
-    # 🔥 ADD THIS LINE
+    # ✅ KEEP YOUR EXISTING LOGIC
     sections = Section.objects.all()
 
     return render(request, 'dashboard/data_entry/add_student.html', {
         'form': form,
-        'sections': sections   # 🔥 ADD THIS
+        'sections': sections
     })
 
 @login_required
 def edit_student(request, student_id):
-    if request.user.role != 'data_entry':
+    if request.user.role not in ['admin', 'data_entry']:
         return redirect('login')
 
     student = get_object_or_404(Student, id=student_id)
@@ -352,14 +433,47 @@ def edit_student(request, student_id):
     else:
         form = StudentForm(instance=student)
 
-    # 🔥 ADD THIS
+    #  ADD THIS
     sections = Section.objects.all()
 
     return render(request, 'dashboard/data_entry/edit_student.html', {
         'form': form,
-        'sections': sections   # 🔥 THIS IS REQUIRED
+        'sections': sections   #  THIS IS REQUIRED
     })
 
+
+
+
+@login_required
+def delete_student(request, pk):
+    #  Allow both admin and data_entry
+    if request.user.role not in ['admin', 'data_entry']:
+        return redirect('login')
+
+    student = get_object_or_404(Student, pk=pk)
+
+    if request.method == 'POST':
+        student_id = student.id
+        student.delete()
+
+        #  AUDIT LOG
+        log_action(
+            request.user,
+            "Deleted Student",
+            "Student",
+            student_id
+        )
+
+        #  Redirect based on role
+        if request.user.role == 'admin':
+            return redirect('admin_manage_students')
+        else:
+            return redirect('manage_students')
+
+    # Optional confirmation page
+    return render(request, 'dashboard/confirm_delete.html', {
+        'student': student
+    })
 #=======Marks Entry By Teacher=================#
 @login_required
 def enter_marks(request):
@@ -427,6 +541,12 @@ def enter_marks(request):
                         'marks': marks
                     }
                 )
+                log_action(
+                 request.user,
+                 f"Entered marks for {selected_subject}",
+                  "Result",
+                  student.id
+                  )
 
     # ================= RESPONSE ================= #
     return render(request, 'dashboard/teacher/enter_marks.html', {
@@ -451,21 +571,18 @@ def admin_results(request):
     selected_section = None
     student_data = []
 
-# ✅ DEFINE class_id FIRST (FIX)
     class_id = None
     section_id = None
-    if request.method == 'POST':
-      class_id = request.POST.get('class')
-      section_id = request.POST.get('section')
 
+    if request.method == 'POST':
+        class_id = request.POST.get('class')
+        section_id = request.POST.get('section')
+
+    # 🔥 LOAD SECTIONS BASED ON CLASS
     if class_id:
         sections = Section.objects.filter(class_name_id=class_id)
-         
-    selected_class = None
-    selected_section = None
-    student_data = []
 
-    # ✅ SUBJECT MAP (MATCHES YOUR DB)
+    # 🔥 SUBJECT MAP
     subject_map = {
         "L1": "l1",
         "L2": "l2",
@@ -475,9 +592,7 @@ def admin_results(request):
         "SOC": "social_science"
     }
 
-    if request.method == 'POST':
-        class_id = request.POST.get('class')
-        section_id = request.POST.get('section')
+    if request.method == 'POST' and class_id and section_id:
 
         selected_class = class_id
         selected_section = section_id
@@ -502,10 +617,11 @@ def admin_results(request):
                 },
                 'total': 0,
                 'percentage': 0,
-                'status': 'Pass'
+                'status': 'Not Evaluated'   # 🔥 DEFAULT
             }
 
             fail = False
+            has_marks = False   # 🔥 IMPORTANT
 
             # 🔥 FETCH RESULTS
             results = Result.objects.filter(student=student)
@@ -516,16 +632,25 @@ def admin_results(request):
 
                 if key:
                     row['marks'][key] = r.marks
+                    has_marks = True
 
                     if r.marks < 33:
                         fail = True
 
-            # ✅ IMPORTANT: CALCULATE TOTAL AFTER ASSIGNING MARKS
+            # 🔥 CALCULATE TOTAL
             total = sum(row['marks'].values())
-
             row['total'] = total
-            row['percentage'] = round(total / len(subject_map), 2)
-            row['status'] = "Fail" if fail else "Pass"
+
+            # 🔥 CALCULATE PERCENTAGE
+            row['percentage'] = round(total / len(subject_map), 2) if has_marks else 0
+
+            # 🔥 FINAL STATUS LOGIC
+            if not has_marks:
+                row['status'] = "Not Evaluated"
+            elif fail:
+                row['status'] = "Fail"
+            else:
+                row['status'] = "Pass"
 
             student_data.append(row)
 
@@ -536,7 +661,6 @@ def admin_results(request):
         'selected_class': selected_class,
         'selected_section': selected_section
     })
-
 from django.http import JsonResponse
 
 def get_sections(request):
@@ -622,3 +746,102 @@ def export_results_excel(request):
 
     wb.save(response)
     return response
+
+
+
+
+
+@login_required
+def apaar_profile(request, student_id):
+    if request.user.role not in ['admin', 'data_entry']:
+        return redirect('login')
+
+    # ✅ SAFE FETCH
+    student = get_object_or_404(Student, id=student_id)
+    apaar = get_object_or_404(ApaarProfile, student=student)
+
+    # 🔥 SUBJECT MAP (based on your DB naming)
+    subject_map = {
+        "L1": "l1",
+        "L2": "l2",
+        "L3": "l3",
+        "SCI": "science",
+        "MATH": "mathematics",
+        "SOC": "social_science"
+    }
+
+    # 🔥 FETCH RESULTS
+    results = Result.objects.filter(student=student)
+
+    # 🔥 INIT MARKS
+    marks = {v: 0 for v in subject_map.values()}
+
+    fail = False
+    has_marks = False   # 🔥 IMPORTANT FLAG
+
+    # 🔥 PROCESS RESULTS
+    for r in results:
+        subject_name = r.subject.name.strip().upper()
+        key = subject_map.get(subject_name)
+
+        if key:
+            marks[key] = r.marks
+            has_marks = True
+
+            if r.marks < 33:
+                fail = True
+
+    # 🔥 CALCULATIONS
+    total = sum(marks.values())
+    percentage = round(total / len(subject_map), 2) if has_marks else 0
+
+    # 🔥 FINAL STATUS LOGIC
+    if not has_marks:
+        status = "Not Evaluated"
+    elif fail:
+        status = "Fail"
+    else:
+        status = "Pass"
+
+    # 🔥 CONTEXT
+    context = {
+        'student': student,
+        'apaar': apaar,
+        'marks': marks,
+        'total': total,
+        'percentage': percentage,
+        'status': status
+    }
+
+    return render(request, 'dashboard/apaar_profile.html', context)
+
+
+
+@login_required
+def apaar_validation(request):
+    if request.user.role != 'admin':
+        return redirect('login')
+
+    student = None
+    apaar = None
+
+    if request.method == 'POST':
+        roll = request.POST.get('roll')
+
+        print("INPUT ROLL:", roll)  # 🔍 DEBUG
+
+        if roll:
+            # 🔥 SAFE QUERY (IMPORTANT FIX)
+            student = Student.objects.filter(
+                roll_number__iexact=roll.strip()
+            ).first()
+
+            print("FOUND STUDENT:", student)  # 🔍 DEBUG
+
+            if student:
+                apaar = ApaarProfile.objects.filter(student=student).first()
+
+    return render(request, 'dashboard/apaar_validation.html', {
+        'student': student,
+        'apaar': apaar
+    })

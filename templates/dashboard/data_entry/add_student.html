@@ -8,7 +8,7 @@
 
         <h2 class="page-title">Add Student</h2>
 
-        <form method="POST">
+        <form method="POST"  action="{% url 'add_student' %}">
             {% csrf_token %}
 
             <div class="form-group">

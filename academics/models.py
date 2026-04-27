@@ -33,6 +33,7 @@ SUBJECT_CHOICES = [
     ('SCI', 'Science'),
     ('MATH', 'Mathematics'),
     ('SOC', 'Social Science'),
+    ('DARW', 'Drawing'),
 ]
 
 

@@ -65,6 +65,7 @@
                 <th>Total</th>
                 <th>%</th>
                 <th>Status</th>
+                
             </tr>
         </thead>
 
@@ -85,13 +86,16 @@
                 <td><strong>{{ s.percentage }}%</strong></td>
 
                 <td>
-                    {% if s.status == "Pass" %}
-                        <span class="status-pass">Pass</span>
-                    {% else %}
-                        <span class="status-fail">Fail</span>
-                    {% endif %}
-                </td>
-            </tr>
+                 {% if s.status == "Pass" %}
+                  <span class="status-pass">Pass</span>
+                 {% elif s.status == "Fail" %}
+                  <span class="status-fail">Fail</span>
+                 {% else %}
+                  <span style="color:orange;">Not Evaluated</span>
+                 {% endif %}
+                  </td>
+                
+                </tr>
             {% endfor %}
         </tbody>
 

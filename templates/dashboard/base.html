@@ -15,33 +15,44 @@
 
         <nav>
             <a href="{% url 'dashboard_home' %}">Dashboard</a>
-            <a href="{% url 'admin_results' %}">Results</a>
 
+            <!--  ADMIN ONLY -->
             {% if request.user.role == 'admin' %}
+                <a href="{% url 'admin_results' %}">Results</a>
+
                 <div class="nav-section">ADMIN</div>
                 <a href="{% url 'manage_users' %}">Users</a>
                 <a href="{% url 'manage_academics' %}">Classes & Sections</a>
                 <a href="{% url 'manage_subjects' %}">Subjects & Mapping</a>
+                <a href="{% url 'admin_manage_students' %}">Manage Students</a>
                 <a href="#">Reports</a>
 
                 <div class="nav-section">ADVANCED</div>
-                <a href="#">Audit Logs</a>
+                <a href="{% url 'audit_logs' %}">Audit Logs</a>
                 <a href="#">Fraud Detection</a>
-                <a href="#">APAAR Validation</a>
+                <a href="{% url 'apaar_validation' %}">APAAR Validation</a>
             {% endif %}
+
+            <!--  DATA ENTRY -->
             {% if request.user.role == 'data_entry' %}
-             <a href="{% url 'manage_students' %}">Students</a>
+                <div class="nav-section">DATA ENTRY</div>
+                <a href="{% url 'manage_students' %}">Students</a>
             {% endif %}
+
+            <!--  TEACHER -->
             {% if request.user.role == 'teacher' %}
-            <a href="{% url 'enter_marks' %}">Enter Marks</a>
+                <div class="nav-section">TEACHER</div>
+                <a href="{% url 'enter_marks' %}">Enter Marks</a>
             {% endif %}
+
+            <!-- ACCOUNT -->
             <div class="nav-section">ACCOUNT</div>
             <form method="POST" action="{% url 'logout' %}" class="logout-form" onsubmit="return confirmLogout()">
-             {% csrf_token %}
-             <button type="submit" class="logout-btn">
-             <span class="logout-icon">⎋</span>
-             Logout
-             </button>
+                {% csrf_token %}
+                <button type="submit" class="logout-btn">
+                    <span class="logout-icon">⎋</span>
+                    Logout
+                </button>
             </form>
         </nav>
     </aside>
@@ -63,10 +74,12 @@
     </main>
 
 </div>
+
 <script>
 function confirmLogout() {
     return confirm("Are you sure you want to logout?");
 }
 </script>
+
 </body>
 </html>

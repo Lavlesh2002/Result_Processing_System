@@ -1,0 +1,57 @@
+{% extends 'dashboard/base.html' %}
+
+{% block content %}
+
+<h2 class="page-title">APAAR Profile</h2>
+
+<div class="card">
+
+    <h3>{{ student.name }}</h3>
+    <p style="color: #222;">APAAR ID: {{ apaar.apaar_id }}</p>
+    <p style="color: #222;">Class: {{ student.student_class }}</p>
+    <p style="color: #222;">Section: {{ student.section }}</p>
+
+</div>
+
+<div class="card">
+
+    <h3>Academic Record</h3>
+
+    <table class="table">
+        <tr>
+            <th>L1</th>
+            <th>L2</th>
+            <th>L3</th>
+            <th>Science</th>
+            <th>Maths</th>
+            <th>Social</th>
+            <th>Total</th>
+            <th>%</th>
+            <th>Status</th>
+        </tr>
+
+        <tr>
+            <td>{{ marks.l1 }}</td>
+            <td>{{ marks.l2 }}</td>
+            <td>{{ marks.l3 }}</td>
+            <td>{{ marks.science }}</td>
+            <td>{{ marks.mathematics }}</td>
+            <td>{{ marks.social_science }}</td>
+            <td><strong>{{ total }}</strong></td>
+            <td><strong>{{ percentage }}%</strong></td>
+            <td>
+             {% if status == "Pass" %}
+               <span style="color:green;">Pass</span>
+             {% elif status == "Fail" %}
+               <span style="color:red;">Fail</span>
+             {% else %}
+               <span style="color:orange;">Not Evaluated</span>
+             {% endif %}
+            </td>
+        </tr>
+
+    </table>
+
+</div>
+
+{% endblock %}

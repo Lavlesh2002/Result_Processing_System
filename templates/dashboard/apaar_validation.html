@@ -1,0 +1,52 @@
+{% extends 'dashboard/base.html' %}
+
+{% block content %}
+
+<h2 class="page-title">APAAR Validation</h2>
+
+<div class="card">
+
+    <form method="POST">
+        {% csrf_token %}
+
+        <input type="number" name="roll" placeholder="Enter Roll Number" required>
+
+        <button type="submit" class="btn-primary">Search</button>
+    </form>
+
+</div>
+
+{% if student %}
+
+<div class="card">
+
+    <h3>Student Details</h3>
+    
+    <p style="color:#222;">Name: {{ student.name }}</p>
+    <p style="color:#222;">Roll: {{ student.roll_number }}</p>
+    <p style="color:#222;">Class:{{ student.student_class }}</p>
+    <p style="color:#222;">Section:{{ student.section }}</p>
+
+    {% if apaar %}
+     <p style="color:#222;">APAAR ID:</strong> {{ apaar.apaar_id }}</p>
+      {% else %}
+      <p style="color:red;"><strong>APAAR ID:</strong> Not generated</p>
+    {% endif %}
+
+    <br>
+
+    <a href="{% url 'apaar_profile' student.id %}" class="btn-primary">
+        View Full APAAR Profile
+    </a>
+
+</div>
+
+{% elif request.method == 'POST' %}
+
+<div class="card">
+    <p style="color:red;">Student not found</p>
+</div>
+
+{% endif %}
+
+{% endblock %}

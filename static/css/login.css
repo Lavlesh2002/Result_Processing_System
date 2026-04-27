@@ -51,6 +51,7 @@ body {
 
 /* BUTTON */
 .login-btn {
+    display:block;
     width: 100%;
     padding: 10px;
     background: #3498db;
@@ -60,6 +61,7 @@ body {
     border-radius: 5px;
     cursor: pointer;
     transition: 0.3s;
+   
 }
 
 .login-btn:hover {
@@ -71,4 +73,27 @@ body {
     margin-top: 15px;
     font-size: 13px;
     color: #777;
+}
+.back-btn {
+    display: block;
+    text-align: center;
+    margin-top: 12px;
+    text-decoration: none;
+    position: relative;
+    transition: all 0.3s ease;
+}
+
+.back-btn:hover {
+    background: #1e40af;           /* darker blue */
+    transform: translateY(-2px);   /* slight lift */
+    box-shadow: 0 6px 15px rgba(37, 99, 235, 0.4);
+}
+.back-btn::before {
+    content: "←";
+    margin-right: 8px;
+    transition: transform 0.3s ease;
+}
+
+.back-btn:hover::before {
+    transform: translateX(-5px);   /* arrow moves left */
 }
