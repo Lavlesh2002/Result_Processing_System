@@ -12,6 +12,8 @@ from results.models import Result
 from django.db.models import Sum
 from audit.utils import log_action
 from student.models import ApaarProfile
+from .utils import detect_fraud
+from .models import FraudAlert
 # ================= DASHBOARD REDIRECT ================= #
 
 @login_required
@@ -844,4 +846,20 @@ def apaar_validation(request):
     return render(request, 'dashboard/apaar_validation.html', {
         'student': student,
         'apaar': apaar
+    })
+
+
+#=======FRAUD DETECTION==========#
+@login_required
+def fraud_detection(request):
+    if request.user.role != 'admin':
+        return redirect('login')
+
+    #  RUN DETECTION
+    detect_fraud()
+
+    alerts = FraudAlert.objects.all().order_by('-created_at')
+
+    return render(request, 'dashboard/admin/fraud.html', {
+        'alerts': alerts
     })

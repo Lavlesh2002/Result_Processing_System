@@ -31,4 +31,5 @@ urlpatterns = [
     path('apaar-validation/', views.apaar_validation, name='apaar_validation'),
     path('admin/manage-students/', views.admin_manage_students, name='admin_manage_students'),
     path('delete-student/<int:pk>/', views.delete_student, name='delete_student'),
+    path('fraud-detection/', views.fraud_detection, name='fraud_detection'),
 ]
